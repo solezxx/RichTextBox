@@ -26,7 +26,6 @@ namespace WpfApp1
         {
             InitializeComponent();
             mygrid.DataContext = Mcl;
-          
         }
         public MyClass Mcl { get; set; } = new MyClass();
 
@@ -39,14 +38,12 @@ namespace WpfApp1
             {
                 x += x;
             }
-
-            Mcl.RichText = x.ToString();
+            Mcl.RichText = x;
         }
     }
     public class MyClass : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
-        private ICommand Command = new RoutedCommand();
         private int line = 0;
         private string richText;
         public string RichText
@@ -55,12 +52,12 @@ namespace WpfApp1
             set
             {
                 line++;
-                if (line>100)
+                richText = value;
+                if (line>10)
                 {
                     line=0;
-                    richText = "";
+                    richText +=",clear";
                 }
-                richText = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("RichText"));
             }
         }

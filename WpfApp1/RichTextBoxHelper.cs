@@ -40,6 +40,7 @@ namespace WpfApp1
                 paragraph.FontWeight = FontWeights.DemiBold;
             }
         }
+        
         // Using a DependencyProperty as the backing store for MyProperty.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty RichTextProperty =
             DependencyProperty.RegisterAttached("RichText", typeof(string), typeof(RichTextBoxHelper), new FrameworkPropertyMetadata
@@ -67,8 +68,14 @@ namespace WpfApp1
                     {
                         run.Foreground = Brushes.DarkGray;
                     }
+                    if (text.Contains("clear"))
+                    {
+                        richTextBox.Document.Blocks.Clear();
+                        text = text.Split(',')[0];
+                    }
                     run.Text = text;
                     paragraph.Inlines.Add(run);
+                    paragraph.LineHeight = 1;
                     richTextBox.Document.Blocks.Add(paragraph);
                     richTextBox.ScrollToEnd();
                 }
