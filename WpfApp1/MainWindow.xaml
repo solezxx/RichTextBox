@@ -10,7 +10,7 @@
     <Grid Name="mygrid" >
         <StackPanel Orientation="Vertical">
             <Button Click="ButtonBase_OnClick" Height="30"></Button>
-            <RichTextBox  Margin="10" IsReadOnly="True" wpfApp1:RichTextBoxHelper.RichText="{Binding RichText}" BorderThickness="0" VerticalScrollBarVisibility="Auto"/>
+            <RichTextBox Height="300" Margin="10" IsReadOnly="True" wpfApp1:RichTextBoxHelper.RichText="{Binding RichText}" BorderThickness="0" VerticalScrollBarVisibility="Auto"/>
         </StackPanel>
         
     </Grid>

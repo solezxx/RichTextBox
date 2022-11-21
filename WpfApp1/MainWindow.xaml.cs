@@ -26,39 +26,67 @@ namespace WpfApp1
         {
             InitializeComponent();
             mygrid.DataContext = Mcl;
+           
         }
         public MyClass Mcl { get; set; } = new MyClass();
-
         private Random rm = new Random();
         private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
         {
-            string x;
-            x= rm.Next(0, 4).ToString();
-            for (int i = 0; i < 3; i++)
+            f();
+        }
+
+        private int x = 1;
+        public async void f()
+        {
+            Task t1=Task.Run(() =>
             {
-                x += x;
-            }
-            Mcl.RichText = x;
+                for (int i = 0; i < 5; i++)
+                {
+                    System.Threading.Thread.Sleep(500);
+                    LdrLog("线程1");
+                }
+            });
+            Task t2 = Task.Run(() =>
+            {
+                for (int i = 0; i < 10; i++)
+                {
+                    System.Threading.Thread.Sleep(500);
+                    LdrLog(x.ToString());
+                    x++;
+                }
+            });
+            await Task.WhenAll(t1, t2);
+        }
+        public string CurTime()
+        {
+            return DateTime.Now.ToString() + "." + DateTime.Now.Millisecond.ToString("D3");
+        }
+        
+        public async void LdrLog(string strtoappend)
+        {
+            await Task.Run(() =>
+            {
+               Mcl.RichText=strtoappend;
+            });
         }
     }
+
     public class MyClass : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
-        private int line = 0;
+       
+       object locklock=new object();
         private string richText;
         public string RichText
         {
             get { return richText; }
             set
             {
-                line++;
-                richText = value;
-                if (line>10)
+                lock (locklock)
                 {
-                    line=0;
-                    richText +=",clear";
+                    richText = value;
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("RichText"));
                 }
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("RichText"));
             }
         }
     }

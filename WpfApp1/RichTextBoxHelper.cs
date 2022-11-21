@@ -12,6 +12,7 @@ namespace WpfApp1
 {
     public class RichTextBoxHelper : DependencyObject
     {
+
         public static string GetRichText(DependencyObject obj)
         {
             return (string)obj.GetValue(RichTextProperty);
@@ -21,26 +22,6 @@ namespace WpfApp1
         {
             obj.SetValue(RichTextProperty, value);
         }
-        public void AddMessage(string msg, Brush brush)
-        {
-            Run run = new Run();
-
-            Paragraph paragraph = new Paragraph();
-
-            run.Foreground = brush;
-
-            run.Text = msg;
-
-            paragraph.Inlines.Add(run);
-
-            paragraph.LineHeight = 1;
-
-            if (brush == System.Windows.Media.Brushes.Red)
-            {
-                paragraph.FontWeight = FontWeights.DemiBold;
-            }
-        }
-        
         // Using a DependencyProperty as the backing store for MyProperty.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty RichTextProperty =
             DependencyProperty.RegisterAttached("RichText", typeof(string), typeof(RichTextBoxHelper), new FrameworkPropertyMetadata
@@ -55,6 +36,7 @@ namespace WpfApp1
                     if (text.Contains("2"))
                     {
                         run.Foreground=Brushes.Red;
+                        paragraph.FontWeight = FontWeights.DemiBold;
                     }
                     else if (text.Contains("1"))
                     {
