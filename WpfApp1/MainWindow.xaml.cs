@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -25,69 +27,112 @@ namespace WpfApp1
         public MainWindow()
         {
             InitializeComponent();
-            mygrid.DataContext = Mcl;
-           
+            viewModel = (LogViewModel)DataContext;
+            viewModel.PropertyChanged += ViewModel_PropertyChanged;
         }
-        public MyClass Mcl { get; set; } = new MyClass();
-        private Random rm = new Random();
+        private LogViewModel viewModel;
+
         private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
         {
-            f();
+            // 模拟日志添加
+            viewModel.AddLog("This is a normal log.");
+            viewModel.AddLog("This is an alarm log!");
         }
-
-        private int x = 1;
-        public async void f()
+        private void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            Task t1=Task.Run(() =>
+            if (e.PropertyName == "Logs")
             {
-                for (int i = 0; i < 5; i++)
-                {
-                    System.Threading.Thread.Sleep(500);
-                    LdrLog("线程1");
-                }
-            });
-            Task t2 = Task.Run(() =>
-            {
-                for (int i = 0; i < 10; i++)
-                {
-                    System.Threading.Thread.Sleep(500);
-                    LdrLog(x.ToString());
-                    x++;
-                }
-            });
-            await Task.WhenAll(t1, t2);
+                UpdateRichTextBox();
+            }
         }
+        private void UpdateRichTextBox()
+        {
+            richTextBox.Document.Blocks.Clear();
+            foreach (var log in viewModel.Logs)
+            {
+                var paragraph = new Paragraph();
+                var run = new Run(log);
+
+                // 简单判断日志内容，实际应用中可以更复杂
+                if (log.Contains("alarm"))
+                {
+                    run.Foreground = Brushes.Red;
+                }
+                else
+                {
+                    run.Foreground = Brushes.Black;
+                }
+
+                paragraph.Inlines.Add(run);
+                richTextBox.Document.Blocks.Add(paragraph);
+            }
+
+            richTextBox.ScrollToEnd();
+        }
+      
         public string CurTime()
         {
-            return DateTime.Now.ToString() + "." + DateTime.Now.Millisecond.ToString("D3");
+            return DateTime.Now + "." + DateTime.Now.Millisecond.ToString("D3");
         }
-        
-        public async void LdrLog(string strtoappend)
+        object loglock=new object();
+        public async void LdrLog(string logMessage, bool isAlarm = false)
         {
             await Task.Run(() =>
             {
-               Mcl.RichText=strtoappend;
+                lock (loglock)
+                {
+                    // 创建新的段落
+                    Paragraph paragraph = new Paragraph();
+
+                    // 设置文本内容和颜色
+                    Run run = new Run(logMessage);
+                    if (isAlarm)
+                    {
+                        run.Foreground = Brushes.Red;
+                    }
+                    else
+                    {
+                        run.Foreground = Brushes.Black; // 默认颜色
+                    }
+
+                    // 将Run添加到段落中
+                    paragraph.Inlines.Add(run);
+
+                    // 将段落添加到RichTextBox的文档中
+                    richTextBox.Document.Blocks.Add(paragraph);
+                }
             });
         }
     }
 
-    public class MyClass : INotifyPropertyChanged
+    public class LogViewModel : INotifyPropertyChanged
     {
-        public event PropertyChangedEventHandler PropertyChanged;
-       
-       object locklock=new object();
-        private string richText;
-        public string RichText
+        private ObservableCollection<string> _logs;
+        public ObservableCollection<string> Logs
         {
-            get { return richText; }
+            get { return _logs; }
             set
             {
-                lock (locklock)
-                {
-                    richText = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("RichText"));
-                }
+                _logs = value;
+                OnPropertyChanged("Logs");
             }
+        }
+
+        public LogViewModel()
+        {
+            Logs = new ObservableCollection<string>();
+        }
+
+        public void AddLog(string logMessage)
+        {
+            Logs.Add(logMessage);
+            Logs = Logs;
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected void OnPropertyChanged(string name)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
     }
 }

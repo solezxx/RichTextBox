@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -12,7 +14,6 @@ namespace WpfApp1
 {
     public class RichTextBoxHelper : DependencyObject
     {
-
         public static string GetRichText(DependencyObject obj)
         {
             return (string)obj.GetValue(RichTextProperty);
@@ -22,6 +23,7 @@ namespace WpfApp1
         {
             obj.SetValue(RichTextProperty, value);
         }
+
         // Using a DependencyProperty as the backing store for MyProperty.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty RichTextProperty =
             DependencyProperty.RegisterAttached("RichText", typeof(string), typeof(RichTextBoxHelper), new FrameworkPropertyMetadata
@@ -35,7 +37,7 @@ namespace WpfApp1
                     Paragraph paragraph = new Paragraph();
                     if (text.Contains("2"))
                     {
-                        run.Foreground=Brushes.Red;
+                        run.Foreground = Brushes.Red;
                         paragraph.FontWeight = FontWeights.DemiBold;
                     }
                     else if (text.Contains("1"))
@@ -50,10 +52,9 @@ namespace WpfApp1
                     {
                         run.Foreground = Brushes.DarkGray;
                     }
-                    if (text.Contains("clear"))
+                    if (richTextBox.Document.Blocks.Count>10)
                     {
-                        richTextBox.Document.Blocks.Clear();
-                        text = text.Split(',')[0];
+                        richTextBox.Document.Blocks.Remove(richTextBox.Document.Blocks.FirstBlock);
                     }
                     run.Text = text;
                     paragraph.Inlines.Add(run);
