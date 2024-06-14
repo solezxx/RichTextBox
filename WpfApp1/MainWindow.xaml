@@ -9,9 +9,7 @@
     Width="800"
     Height="450"
     mc:Ignorable="d">
-    <Window.DataContext>
-        <wpfApp1:LogViewModel />
-    </Window.DataContext>
+
     <Grid>
         <StackPanel Orientation="Vertical">
             <Button

@@ -27,88 +27,51 @@ namespace WpfApp1
         public MainWindow()
         {
             InitializeComponent();
-            viewModel = (LogViewModel)DataContext;
-            viewModel.PropertyChanged += ViewModel_PropertyChanged;
+            richTextBox.Document.Blocks.Clear();
+            XLog._richTextBox= richTextBox;
         }
-        private LogViewModel viewModel;
-
+        XColorLog.XLog XLog=new XColorLog.XLog();
         private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
         {
             // 模拟日志添加
-            viewModel.AddLog("This is a normal log.");
-            viewModel.AddLog("This is an alarm log!", LogLevel.Alarm);
+            //AddLog(richTextBox,"This is a normal log.");
+            //AddLog(richTextBox,"This is an alarm log!", LogLevel.Alarm);
+            XLog.AddLog("This is a normal log.",XColorLog.LogLevel.Information);
         }
-        private void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+
+        public void AddLog(RichTextBox _richTextBox ,string logMessage, LogLevel logLevel = LogLevel.Normal)
         {
-            if (e.PropertyName == "Logs")
+            // 创建新的段落
+            Paragraph paragraph = new Paragraph();
+
+            // 设置文本内容和颜色
+            Run run = new Run(logMessage);
+            if (logLevel == LogLevel.Alarm)
             {
-                UpdateRichTextBox();
+                run.Foreground = Brushes.Red;
             }
-        }
-        private void UpdateRichTextBox()
-        {
-            richTextBox.Document.Blocks.Clear();
-            foreach (var log in viewModel.Logs)
+            else
             {
-                var paragraph = new Paragraph();
-                var run = new Run(log.Item1);
-
-                // 简单判断日志内容，实际应用中可以更复杂
-                if (log.Item2==LogLevel.Alarm)
-                {
-                    run.Foreground = Brushes.Red;
-                }
-                else
-                {
-                    run.Foreground = Brushes.Black;
-                }
-
-                paragraph.Inlines.Add(run);
-                paragraph.LineHeight = 1;
-                richTextBox.Document.Blocks.Add(paragraph);
+                run.Foreground = Brushes.Black; // 默认颜色
             }
 
-            richTextBox.ScrollToEnd();
+            // 将Run添加到段落中
+            paragraph.Inlines.Add(run);
+            paragraph.LineHeight = 1;
+
+            // 将段落添加到RichTextBox的文档中
+            _richTextBox.Document.Blocks.Add(paragraph);
+            if (_richTextBox.Document.Blocks.Count > 10)
+            {
+                _richTextBox.Document.Blocks.Remove(richTextBox.Document.Blocks.FirstBlock);
+            }
+
+            // 滚动到文档末尾
+            _richTextBox.ScrollToEnd();
         }
-      
         public string CurTime()
         {
             return DateTime.Now + "." + DateTime.Now.Millisecond.ToString("D3");
-        }
-    }
-
-    public class LogViewModel : INotifyPropertyChanged
-    {
-        private ObservableCollection<Tuple<string,LogLevel>> _logs;
-        public ObservableCollection<Tuple<string, LogLevel>> Logs
-        {
-            get { return _logs; }
-            set
-            {
-                _logs = value;
-                OnPropertyChanged("Logs");
-            }
-        }
-
-        public LogViewModel()
-        {
-            Logs = new ObservableCollection<Tuple<string, LogLevel>>();
-        }
-
-        public void AddLog(string logMessage, LogLevel level=LogLevel.Normal)
-        {
-            Logs.Add(new Tuple<string, LogLevel>(logMessage,level));
-            if (Logs.Count>10)
-            {
-                Logs.RemoveAt(0);
-            }
-            OnPropertyChanged("Logs");
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-        protected void OnPropertyChanged(string name)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
     }
     public enum LogLevel
