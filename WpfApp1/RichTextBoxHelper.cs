@@ -12,6 +12,9 @@ using System.Windows.Media;
 
 namespace WpfApp1
 {
+    /// <summary>
+    /// 弃用的代码
+    /// </summary>
     public class RichTextBoxHelper : DependencyObject
     {
         public static string GetRichText(DependencyObject obj)

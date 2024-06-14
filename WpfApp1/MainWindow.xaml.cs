@@ -36,7 +36,7 @@ namespace WpfApp1
         {
             // 模拟日志添加
             viewModel.AddLog("This is a normal log.");
-            viewModel.AddLog("This is an alarm log!");
+            viewModel.AddLog("This is an alarm log!", LogLevel.Alarm);
         }
         private void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
@@ -51,10 +51,10 @@ namespace WpfApp1
             foreach (var log in viewModel.Logs)
             {
                 var paragraph = new Paragraph();
-                var run = new Run(log);
+                var run = new Run(log.Item1);
 
                 // 简单判断日志内容，实际应用中可以更复杂
-                if (log.Contains("alarm"))
+                if (log.Item2==LogLevel.Alarm)
                 {
                     run.Foreground = Brushes.Red;
                 }
@@ -64,6 +64,7 @@ namespace WpfApp1
                 }
 
                 paragraph.Inlines.Add(run);
+                paragraph.LineHeight = 1;
                 richTextBox.Document.Blocks.Add(paragraph);
             }
 
@@ -74,41 +75,12 @@ namespace WpfApp1
         {
             return DateTime.Now + "." + DateTime.Now.Millisecond.ToString("D3");
         }
-        object loglock=new object();
-        public async void LdrLog(string logMessage, bool isAlarm = false)
-        {
-            await Task.Run(() =>
-            {
-                lock (loglock)
-                {
-                    // 创建新的段落
-                    Paragraph paragraph = new Paragraph();
-
-                    // 设置文本内容和颜色
-                    Run run = new Run(logMessage);
-                    if (isAlarm)
-                    {
-                        run.Foreground = Brushes.Red;
-                    }
-                    else
-                    {
-                        run.Foreground = Brushes.Black; // 默认颜色
-                    }
-
-                    // 将Run添加到段落中
-                    paragraph.Inlines.Add(run);
-
-                    // 将段落添加到RichTextBox的文档中
-                    richTextBox.Document.Blocks.Add(paragraph);
-                }
-            });
-        }
     }
 
     public class LogViewModel : INotifyPropertyChanged
     {
-        private ObservableCollection<string> _logs;
-        public ObservableCollection<string> Logs
+        private ObservableCollection<Tuple<string,LogLevel>> _logs;
+        public ObservableCollection<Tuple<string, LogLevel>> Logs
         {
             get { return _logs; }
             set
@@ -120,13 +92,17 @@ namespace WpfApp1
 
         public LogViewModel()
         {
-            Logs = new ObservableCollection<string>();
+            Logs = new ObservableCollection<Tuple<string, LogLevel>>();
         }
 
-        public void AddLog(string logMessage)
+        public void AddLog(string logMessage, LogLevel level=LogLevel.Normal)
         {
-            Logs.Add(logMessage);
-            Logs = Logs;
+            Logs.Add(new Tuple<string, LogLevel>(logMessage,level));
+            if (Logs.Count>10)
+            {
+                Logs.RemoveAt(0);
+            }
+            OnPropertyChanged("Logs");
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -134,5 +110,10 @@ namespace WpfApp1
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
+    }
+    public enum LogLevel
+    {
+        Normal,
+        Alarm
     }
 }

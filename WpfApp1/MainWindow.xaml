@@ -14,7 +14,10 @@
     </Window.DataContext>
     <Grid>
         <StackPanel Orientation="Vertical">
-            <Button Height="30" Click="ButtonBase_OnClick" />
+            <Button
+                Height="30"
+                Click="ButtonBase_OnClick"
+                Content="添加信息" />
             <RichTextBox
                 x:Name="richTextBox"
                 Height="300"
